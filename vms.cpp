@@ -1,13 +1,7 @@
 /*
 what is left to add?
 
-branching/loops
-
-subroutines, possibly implemented in a way that is compatible with recursion
-
 better constant pushing
-
-tail call optimization?
 
 */
 
@@ -26,10 +20,10 @@ using namespace std;
 char mem [MEMSIZETWO];
 int sp = 0;
 bool done = false;
-map<string,void (*) ()> bigdic;
 
-map<string, vector<variant<string, void (*) ()>>> newdic;
+//map<string, vector<variant<string, void (*) ()>>> newdic;
 
+map<string, variant<void (*) (), vector<string>>> newdic;
 /* 
 comm = string | code
 def = [com]
@@ -100,10 +94,16 @@ void mul(){
 
 
 
-//map<string, vector<variant<string, void (*) ()>>> newdic;
+//map<string, variant<void (*) (), vector<string>>> newdic;
 
-void insertIntoDic(string name, void (* code) ()) {
-  newdic.insert(pair<string, vector<variant<string, void (*) ()>>>(name, vector<variant<string, void (*) ()>> (1, variant<string, void (*) ()> (code))));
+
+void insertIntoDic(string name, variant<void (*) (), vector<string>> code){
+  newdic.insert(
+    pair<string, variant<void (*) (), vector<string>>>(
+      name,
+      code
+    )
+  );
 }
 
 void makedic() {
@@ -128,24 +128,30 @@ void makedic() {
 
 
 void exec(string funcname) {
-  for (int count = 0; (count < newdic[funcname].size()) && (!done) ; count++) {
-    get<void (*) ()>(newdic[funcname][count])(); 
-    std::visit([](auto& arg)){
-      using T 
-    };
-  }
+  std::visit([](auto arg){
+    using T = std::decay_t<decltype(arg)>;
+    if constexpr (std::is_same_v<T, void (*) ()>)
+      arg();
+    else
+      for (int count = 0; count < arg.size() ; count++) {
+        exec(arg[count]);
+      }
+  }, newdic[funcname]);
 }
 
 
-
-void run(std::vector<string> prog) {
-
-  for (int progcount = 0; !done ;progcount++){
-    if (progcount == prog.size()) progcount = 0;
-    exec(prog[progcount]);
+//this needs to be modified to allow for subroutine definition
+void run(vector<string> prog){
+  bool insubdef = false;
+  string subname;
+  vector<string> subdef; 
+  for (int count = 0; (count < prog.size()) && (!done) ; count++){
+    if insubdef 
+      prog[count]
+    else
+      exec(prog[count]);
   }
-} 
-
+}
 
 
 int main(int argc, char *argv[]) {
