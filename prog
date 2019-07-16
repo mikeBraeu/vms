@@ -1,4 +1,7 @@
+: evilpush push6 push6 push6 ;
+: condense add add ;
+: condensedevil evilpush condense ;
 push1
+condensedevil
 push2
-add
-term
+.
